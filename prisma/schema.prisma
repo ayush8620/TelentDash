@@ -43,7 +43,6 @@ model Company {
   headquarters    String?
   founded_year    Int?
   headcount_range String?
-  logo_url        String?
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
   salaries        Salary[]

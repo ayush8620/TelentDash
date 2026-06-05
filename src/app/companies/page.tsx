@@ -37,12 +37,8 @@ export default async function CompaniesPage() {
             className="glass hover:glass-strong transition-default p-6 flex flex-col group"
           >
             <div className="flex items-start gap-4 mb-6">
-              <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center border border-accent/10 group-hover:border-accent/30 flex-shrink-0 transition-colors overflow-hidden">
-                {company.logo_url ? (
-                  <img src={company.logo_url} alt={company.name} className="w-full h-full object-contain p-1.5" />
-                ) : (
-                  <span className="text-lg font-bold text-slate-800">{company.name.charAt(0)}</span>
-                )}
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent/20 to-transparent flex items-center justify-center border border-accent/10 group-hover:border-accent/30 flex-shrink-0 transition-colors">
+                <span className="text-lg font-bold text-deep">{company.name.charAt(0)}</span>
               </div>
               <div>
                 <h2 className="text-xl font-bold text-deep group-hover:text-accent transition-colors">{company.name}</h2>

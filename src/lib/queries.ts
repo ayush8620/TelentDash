@@ -73,7 +73,6 @@ interface PrismaCompany {
   headquarters: string | null;
   founded_year: number | null;
   headcount_range: string | null;
-  logo_url: string | null;
 }
 
 function serializeCompany(row: PrismaCompany): CompanyProfile {
@@ -84,7 +83,6 @@ function serializeCompany(row: PrismaCompany): CompanyProfile {
     headquarters: row.headquarters || '',
     founded_year: row.founded_year,
     headcount_range: row.headcount_range || '',
-    logo_url: row.logo_url,
   };
 }
 

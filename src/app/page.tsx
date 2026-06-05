@@ -1,27 +1,26 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { getAllCompanyProfiles, getAllSalaryRecords } from '@/lib/queries';
+import { getAllCompanySlugs, getAllSalaryRecords } from '@/lib/queries';
 
 export const revalidate = 3600;
 
 export default async function LandingPage() {
-  const companies = await getAllCompanyProfiles();
+  const companies = await getAllCompanySlugs();
   const records = await getAllSalaryRecords();
   
   // Get top 6 companies with most records to feature them
   const companyCounts = records.reduce((acc, curr) => {
-    acc[curr.company_slug] = (acc[curr.company_slug] || 0) + 1;
+    acc[curr.company] = (acc[curr.company] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
   
   const topCompanies = Object.entries(companyCounts)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 6)
-    .map(([slug]) => {
-      const company = companies.find(c => c.slug === slug);
-      return company!;
-    })
-    .filter(Boolean);
+    .map(([name]) => {
+      const record = records.find(r => r.company === name);
+      return { name, slug: record?.company_slug || name.toLowerCase() };
+    });
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex flex-col relative overflow-hidden">
@@ -75,12 +74,8 @@ export default async function LandingPage() {
                 href={`/companies/${company.slug}`}
                 className="px-6 py-3 rounded-xl glass hover:glass-strong transition-default flex items-center gap-3 group"
               >
-                <div className="w-6 h-6 rounded-md bg-white flex items-center justify-center border border-accent/10 group-hover:border-accent/30 overflow-hidden">
-                  {company.logo_url ? (
-                    <img src={company.logo_url} alt={company.name} className="w-full h-full object-contain p-0.5" />
-                  ) : (
-                    <span className="text-xs font-bold text-slate-800">{company.name.charAt(0)}</span>
-                  )}
+                <div className="w-6 h-6 rounded-md bg-gradient-to-br from-accent/20 to-transparent flex items-center justify-center border border-accent/10 group-hover:border-accent/30">
+                  <span className="text-xs font-bold text-deep">{company.name.charAt(0)}</span>
                 </div>
                 <span className="font-medium text-body group-hover:text-deep">{company.name}</span>
               </Link>

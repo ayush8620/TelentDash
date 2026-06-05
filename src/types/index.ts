@@ -39,7 +39,6 @@ export interface CompanyProfile {
   founded_year: number | null;
   headcount_range: string;
   headquarters: string;
-  logo_url?: string | null;
 }
 
 // Filter state for URL-synced filtering
