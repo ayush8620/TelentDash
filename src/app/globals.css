@@ -1,26 +1,91 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* TalentDash Color System */
+  --color-accent: #FF5A5F;
+  --color-accent-hover: #E5484D;
+  --color-deep: #222222;
+  --color-body: #484848;
+  --color-muted: #717171;
+  --color-surface: #FFFFFF;
+  --color-background: #F7F7F7;
+  --color-border: #EBEBEB;
+  --color-success: #008A05;
+  --color-warning: #FFB400;
+  --color-error: #D93025;
+  --color-hover: #F2F2F2;
+  --color-data-blue: #0369A1;
+
+  /* Font */
+  --font-sans: var(--font-inter);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: #F7F7F7;
+  --foreground: #222222;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography scale */
+h1 {
+  font-size: 2.25rem; /* 36px */
+  font-weight: 700;
+  line-height: 1.1;
+  color: #222222;
+}
+
+h2 {
+  font-size: 1.75rem; /* 28px */
+  font-weight: 700;
+  color: #222222;
+}
+
+h3 {
+  font-size: 1.375rem; /* 22px */
+  font-weight: 600;
+  color: #222222;
+}
+
+/* Custom scrollbar for table containers */
+.salary-table-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.salary-table-container::-webkit-scrollbar-track {
+  background: #F7F7F7;
+  border-radius: 3px;
+}
+
+.salary-table-container::-webkit-scrollbar-thumb {
+  background: #EBEBEB;
+  border-radius: 3px;
+}
+
+.salary-table-container::-webkit-scrollbar-thumb:hover {
+  background: #717171;
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid #FF5A5F;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Selection color */
+::selection {
+  background: rgba(255, 90, 95, 0.15);
+  color: #222222;
+}
+
+/* Transition defaults */
+.transition-default {
+  transition: all 150ms ease-in-out;
 }
