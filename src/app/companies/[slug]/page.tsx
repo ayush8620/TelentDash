@@ -2,8 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { getAllCompanySlugs, getRecordsByCompany } from '@/lib/mock-data';
-import { getCompanyProfile } from '@/lib/company-data';
+import { getAllCompanySlugs, getSalaryRecordsByCompanySlug, getCompanyProfile } from '@/lib/queries';
 import { generateCompanyPageMetadata, generateCompanyJsonLd } from '@/lib/utils/seo';
 import { computeCompanyStats } from '@/lib/utils/compensation';
 import { CompanyHeader } from '@/components/features/company-header';
@@ -12,9 +11,12 @@ import { LevelDistributionBar } from '@/components/features/level-distribution-b
 import { SalaryTable } from '@/components/features/salary-table';
 import { Button } from '@/components/ui/button';
 
+// Revalidate every hour — company data changes rarely
+export const revalidate = 3600;
+
 // Pre-generate all company pages at build time
 export async function generateStaticParams() {
-  const slugs = getAllCompanySlugs();
+  const slugs = await getAllCompanySlugs();
   return slugs.map((slug) => ({ slug }));
 }
 
@@ -25,9 +27,9 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const company = getCompanyProfile(slug);
+  const company = await getCompanyProfile(slug);
   if (!company) return { title: 'Company Not Found' };
-  const records = getRecordsByCompany(slug);
+  const records = await getSalaryRecordsByCompanySlug(slug);
   return generateCompanyPageMetadata(company, records.length);
 }
 
@@ -37,10 +39,10 @@ export default async function CompanyPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const company = getCompanyProfile(slug);
+  const company = await getCompanyProfile(slug);
   if (!company) notFound();
 
-  const records = getRecordsByCompany(slug);
+  const records = await getSalaryRecordsByCompanySlug(slug);
   const stats = computeCompanyStats(records);
   const jsonLd = generateCompanyJsonLd(company);
 

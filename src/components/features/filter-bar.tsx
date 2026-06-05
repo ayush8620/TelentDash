@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { useCallback, useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import type { Currency } from '@/types';
@@ -25,41 +25,40 @@ export function FilterBar({ roles, locations }: FilterBarProps) {
   const currentCurrency = (searchParams.get('currency') as Currency) || 'INR';
   const currentLevels = searchParams.get('level')?.split(',').filter(Boolean) || [];
 
-  const updateParams = useCallback(
-    (updates: Record<string, string>) => {
-      const params = new URLSearchParams(searchParams.toString());
+  const pushUpdate = (updates: Record<string, string>) => {
+    const params = new URLSearchParams(searchParams.toString());
 
-      Object.entries(updates).forEach(([key, value]) => {
-        if (value) {
-          params.set(key, value);
-        } else {
-          params.delete(key);
-        }
-      });
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value) {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+    });
 
-      // Reset to page 1 when filters change
-      params.delete('page');
+    params.delete('page');
 
-      startTransition(() => {
-        router.push(`${pathname}?${params.toString()}`, { scroll: false });
-      });
-    },
-    [router, pathname, searchParams]
-  );
+    startTransition(() => {
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    });
+  };
 
-  // Debounced company search
+  // Debounce search ONLY when typing
   useEffect(() => {
     const timer = setTimeout(() => {
-      updateParams({ company: companySearch });
+      if (companySearch !== (searchParams.get('company') || '')) {
+        pushUpdate({ company: companySearch });
+      }
     }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [companySearch, updateParams]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [companySearch]); // Omit pushUpdate and searchParams to prevent loops
 
   const toggleLevel = (level: string) => {
     const newLevels = currentLevels.includes(level)
       ? currentLevels.filter((l) => l !== level)
       : [...currentLevels, level];
-    updateParams({ level: newLevels.join(',') });
+    pushUpdate({ level: newLevels.join(',') });
   };
 
   const clearAll = () => {
@@ -70,26 +69,21 @@ export function FilterBar({ roles, locations }: FilterBarProps) {
   };
 
   const hasActiveFilters =
-    companySearch || currentRole || currentLocation || currentLevels.length > 0 || currentCurrency !== 'INR';
+    (searchParams.get('company') || '') || currentRole || currentLocation || currentLevels.length > 0 || currentCurrency !== 'INR';
 
   return (
-    <div className="bg-surface rounded-xl border border-border p-4 mb-6">
-      <div className="flex flex-col gap-4">
+    <div className="glass rounded-xl p-5 mb-6 shadow-sm border border-border">
+      <div className="flex flex-col gap-5">
         {/* Row 1: Search + Role + Location + Currency */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Input
             label="Company"
             placeholder="Search companies..."
             value={companySearch}
             onChange={(e) => setCompanySearch(e.target.value)}
             icon={
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
+              <svg className="w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             }
           />
@@ -98,7 +92,7 @@ export function FilterBar({ roles, locations }: FilterBarProps) {
             label="Role"
             placeholder="All Roles"
             value={currentRole}
-            onChange={(e) => updateParams({ role: e.target.value })}
+            onChange={(e) => pushUpdate({ role: e.target.value })}
             options={roles.map((r) => ({ value: r, label: r }))}
           />
 
@@ -106,31 +100,31 @@ export function FilterBar({ roles, locations }: FilterBarProps) {
             label="Location"
             placeholder="All Locations"
             value={currentLocation}
-            onChange={(e) => updateParams({ location: e.target.value })}
+            onChange={(e) => pushUpdate({ location: e.target.value })}
             options={locations.map((l) => ({ value: l, label: l }))}
           />
 
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-muted uppercase tracking-wider">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[10px] font-bold text-muted uppercase tracking-widest pl-1">
               Currency
             </label>
-            <div className="flex rounded-lg border border-border overflow-hidden h-[38px]">
+            <div className="flex rounded-lg border border-border overflow-hidden h-[42px] bg-surface-solid">
               <button
-                onClick={() => updateParams({ currency: '' })}
-                className={`flex-1 text-sm font-medium transition-colors ${
+                onClick={() => pushUpdate({ currency: 'INR' })}
+                className={`flex-1 text-sm font-semibold transition-all duration-200 ${
                   currentCurrency === 'INR'
-                    ? 'bg-accent text-white'
-                    : 'bg-surface text-body hover:bg-hover'
+                    ? 'bg-gradient-to-r from-accent to-[#06b6d4] text-white shadow-inner'
+                    : 'text-body hover:text-deep hover:bg-hover'
                 }`}
               >
                 ₹ INR
               </button>
               <button
-                onClick={() => updateParams({ currency: 'USD' })}
-                className={`flex-1 text-sm font-medium transition-colors border-l border-border ${
+                onClick={() => pushUpdate({ currency: 'USD' })}
+                className={`flex-1 text-sm font-semibold transition-all duration-200 border-l border-border ${
                   currentCurrency === 'USD'
-                    ? 'bg-accent text-white'
-                    : 'bg-surface text-body hover:bg-hover'
+                    ? 'bg-gradient-to-r from-accent to-[#06b6d4] text-white shadow-inner'
+                    : 'text-body hover:text-deep hover:bg-hover'
                 }`}
               >
                 $ USD
@@ -140,18 +134,18 @@ export function FilterBar({ roles, locations }: FilterBarProps) {
         </div>
 
         {/* Row 2: Level multi-select + Clear */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-medium text-muted uppercase tracking-wider mr-1">
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border/50">
+          <span className="text-[10px] font-bold text-muted uppercase tracking-widest mr-2">
             Level
           </span>
           {ALL_LEVELS.map((level) => (
             <button
               key={level}
               onClick={() => toggleLevel(level)}
-              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors border ${
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 border ${
                 currentLevels.includes(level)
-                  ? 'border-accent bg-accent/10 text-accent'
-                  : 'border-border bg-surface text-body hover:border-muted'
+                  ? 'border-accent/50 bg-accent/15 text-accent shadow-[0_0_10px_rgba(99,102,241,0.1)]'
+                  : 'border-border bg-surface-solid text-body hover:border-muted hover:text-deep'
               }`}
             >
               {level}
@@ -161,20 +155,17 @@ export function FilterBar({ roles, locations }: FilterBarProps) {
           {hasActiveFilters && (
             <button
               onClick={clearAll}
-              className="ml-auto text-xs font-medium text-accent hover:text-accent-hover underline underline-offset-2 transition-colors"
+              className="ml-auto text-xs font-semibold text-accent hover:text-accent-hover hover:underline underline-offset-4 transition-colors px-2 py-1"
             >
-              Clear all
+              Clear all filters
             </button>
           )}
         </div>
       </div>
 
       {isPending && (
-        <div className="mt-3 h-0.5 bg-accent/20 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-accent rounded-full animate-pulse"
-            style={{ width: '30%' }}
-          />
+        <div className="mt-4 h-0.5 w-full bg-accent/10 rounded-full overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-accent to-[#06b6d4] rounded-full animate-pulse" style={{ width: '30%' }} />
         </div>
       )}
     </div>

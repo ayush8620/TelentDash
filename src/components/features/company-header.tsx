@@ -8,11 +8,13 @@ interface CompanyHeaderProps {
 export function CompanyHeader({ company }: CompanyHeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
-      {/* Company Avatar */}
-      <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center flex-shrink-0">
-        <span className="text-2xl font-bold text-accent">
-          {company.name.charAt(0)}
-        </span>
+      {/* Avatar / Logo */}
+      <div className="w-16 h-16 rounded-xl bg-white flex items-center justify-center border border-border shadow-sm flex-shrink-0 overflow-hidden">
+        {company.logo_url ? (
+          <img src={company.logo_url} alt={company.name} className="w-full h-full object-contain p-2" />
+        ) : (
+          <span className="text-2xl font-bold text-slate-800">{company.name.charAt(0)}</span>
+        )}
       </div>
 
       <div className="flex-1">

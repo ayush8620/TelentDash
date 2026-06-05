@@ -1,16 +1,23 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { salaryRecords, getAllRoles, getAllLocations } from '@/lib/mock-data';
+import { getAllSalaryRecords, getAllRoles, getAllLocations } from '@/lib/queries';
 import { generateSalaryPageMetadata, generateSalaryDatasetJsonLd } from '@/lib/utils/seo';
 import { FilterBar } from '@/components/features/filter-bar';
 import { SalaryTable } from '@/components/features/salary-table';
 
 export const metadata: Metadata = generateSalaryPageMetadata();
 
-export default function SalariesPage() {
-  const roles = getAllRoles();
-  const locations = getAllLocations();
-  const jsonLd = generateSalaryDatasetJsonLd(salaryRecords.length);
+// Revalidate every 5 minutes — not fully static, picks up new submissions
+export const revalidate = 300;
+
+export default async function SalariesPage() {
+  const [records, roles, locations] = await Promise.all([
+    getAllSalaryRecords(),
+    getAllRoles(),
+    getAllLocations(),
+  ]);
+
+  const jsonLd = generateSalaryDatasetJsonLd(records.length);
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -27,7 +34,7 @@ export default function SalariesPage() {
         </h1>
         <p className="text-body text-base">
           Compare verified compensation data across{' '}
-          <span className="font-semibold text-deep">{salaryRecords.length}</span>{' '}
+          <span className="font-semibold text-deep">{records.length}</span>{' '}
           salary records from top tech companies. Filter by company, role, level, and location.
         </p>
       </div>
@@ -47,7 +54,7 @@ export default function SalariesPage() {
           <div className="h-96 bg-surface rounded-xl border border-border animate-pulse" />
         }
       >
-        <SalaryTable records={salaryRecords} />
+        <SalaryTable records={records} />
       </Suspense>
     </section>
   );
